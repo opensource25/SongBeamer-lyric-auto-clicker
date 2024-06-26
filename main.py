@@ -1,15 +1,36 @@
-import os.path
-
 from pynput import keyboard
 import csv
+import json
+import os
+from difflib import SequenceMatcher
+from vosk import Model, KaldiRecognizer
 
-import config
+from config import *
 
 
 class SongAutoClicker:
     def __init__(self):
         self.songlist = {}
         self.compatible_songs = {}
+
+        self.current_song = None
+        self.current_song_index = 0
+        self.current_verse = None
+        self.current_verse_index = 0
+
+    # def setup_voice_recognition(self, vosk_model_path=vosk_modle_path):
+    #     audio = pyaudio.PyAudio()
+    #     self.stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+    #
+    #     model = Model(vosk_model_path)
+    #     self.recognizer = KaldiRecognizer(model, "rate")
+    #
+    # def voice_recognize(self):
+    #     while True:
+    #         data = self.stream.read(CHUNK)
+    #         if self.recognizer.AcceptWaveform(data):
+    #             result = json.loads(self.recognizer.Result())
+    #
 
     def setup_hotkeys(self):
         # could be remapped with auto hot key for example to the numpad
@@ -27,27 +48,43 @@ class SongAutoClicker:
 
     # Hotkey Callbacks
     def next_song(self):
+        if self.current_song_index == len(self.songlist):
+            print("no more songs")
+        else:
+            self.current_song = list(self.songlist.keys())[self.current_song_index + 1]
+
         print("next song")
 
     def previous_song(self):
         print("previous song")
 
     def next_verse(self):
-        print("next verse")
+        if self.current_song_index + 2 <= 9:
+            keyboard.Controller.press(str(self.current_song + 2))
+        else:
+            print("no keyboard shortcut possible")
 
     def previous_verse(self):
-        print("previous verse")
+        if self.current_song_index - 1 >= 1:
+            keyboard.Controller.press(str(self.current_song - 1))
+        else:
+            print("no keyboard shortcut possible")
 
     def pause(self):
-        print("pause")
+        pass
+
 
     def play(self):
+        if self.current_song_index + 1 <= 9:
+            keyboard.Controller.press(str(self.current_song + 1))
+        else:
+            print("no keyboard shortcut possible")
         print("play")
 
     def exit(self):
         print("exit")
 
-    def load_songlist(self, songlist_path=config.songlist_path):
+    def load_songlist(self, songlist_path=songlist_path):
         with open(songlist_path, "r") as f:
             lines = f.readlines()
             for line in lines:
@@ -62,7 +99,7 @@ class SongAutoClicker:
 
     def load_song(self, songname):
         sng_filename = self.songlist[songname]
-        sng_path = os.path.join(config.sng_dir, sng_filename)
+        sng_path = os.path.join(sng_dir, sng_filename)
         song_data = {}
         lastline = ""
         versename = ""
@@ -97,12 +134,14 @@ class SongAutoClicker:
         return song_data
 
     def load_compatible_songs(self):
-        with open(config.compatible_songs_path, "r", encoding="utf-8") as f:
+        with open(compatible_songs_path, "r", encoding="utf-8") as f:
             reader = csv.reader(f)
             # skip header
             next(reader)
             for row in reader:
                 self.compatible_songs.update({row[0]: row[1]})
+
+
 
 
 if __name__ == '__main__':
