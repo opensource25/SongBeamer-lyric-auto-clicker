@@ -1,1 +1,1 @@
-This is a script to automatically right lyric slide for songs in SongBeamer.
+This is a script to automatically present right lyric slide for songs in SongBeamer.
