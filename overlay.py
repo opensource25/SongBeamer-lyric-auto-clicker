@@ -75,24 +75,26 @@ class StatusOverlay(QWidget):
         self.move(screen_geometry.width() - self.width() - 10, 10)
 
 
-class Overlay(QThread):
+class OverlayThread(QThread):
     def __init__(self):
         super().__init__()
+        self.status_overlay = None
+        self.help_overlay = None
+        self.app = None
+        print("Initializing overlay thread")
 
+    def run(self):
+        print("Starting overlay")
         self.app = QApplication([])
+
         self.help_overlay = HelpOverlay()
         self.status_overlay = StatusOverlay()
 
-    def run(self):
         self.help_overlay.show()
         self.status_overlay.show()
 
+        print("Overlay started")
         self.app.exec_()
 
     def get_status_overlay(self):
         return self.status_overlay
-
-
-def start_overlay():
-    Overlay().run()
-    return Overlay()
