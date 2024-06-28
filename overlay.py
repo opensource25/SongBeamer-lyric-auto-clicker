@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QDesktopWidget, QGridLayout
 from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtGui import QFont
+import threading
 
 
 class HelpOverlay(QWidget):
@@ -81,6 +82,7 @@ class OverlayThread(QThread):
         self.status_overlay = None
         self.help_overlay = None
         self.app = app
+        self.overlay_initialized = threading.Event()
         print("Initializing overlay thread")
 
     def run(self):
@@ -92,7 +94,9 @@ class OverlayThread(QThread):
         self.help_overlay.show()
         self.status_overlay.show()
 
+        self.overlay_initialized.set()
         print("Overlay started")
 
     def get_status_overlay(self):
+        self.overlay_initialized.wait()
         return self.status_overlay

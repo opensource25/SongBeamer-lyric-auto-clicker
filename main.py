@@ -17,6 +17,12 @@ class SongAutoClicker:
         self.compatible_songs = {}
 
         self.current_song_index = -1
+        try:
+            self.current_song = self.song_order[self.current_song_index]
+            self.current_song_data = self.songlist[self.current_song]
+        except IndexError:
+            self.current_song = None
+            self.current_song_data = None
         self.current_verse_index = -1
 
         self.status_overlay = None
@@ -37,22 +43,22 @@ class SongAutoClicker:
 
     def setup_hotkeys(self):
         hotkeys = {
-            '<f13>': self.next_song,
-            '<f14>': self.previous_song,
-            '<f15>': self.next_verse,
-            '<f16>': self.previous_verse,
-            '<f17>': self.pause,
-            '<f18>': self.play,
-            '<f19>': self.exit
+            '<f13>': self.call_next_song,
+            '<f14>': self.call_previous_song,
+            '<f15>': self.call_next_verse,
+            '<f16>': self.call_previous_verse,
+            '<f17>': self.call_pause,
+            '<f18>': self.call_play,
+            '<f19>': self.call_exit
         }
         hotkeys_test = {
-            '<f6>': self.next_song,
-            '<f7>': self.previous_song,
-            '<f8>': self.next_verse,
-            '<f9>': self.previous_verse,
-            '<f10>': self.pause,
-            '<f11>': self.play,
-            '<f12>': self.exit
+            '<f6>': self.call_next_song,
+            '<f7>': self.call_previous_song,
+            '<f8>': self.call_next_verse,
+            '<f9>': self.call_previous_verse,
+            '<f10>': self.call_pause,
+            '<f11>': self.call_play,
+            '<f12>': self.call_exit
         }
         self.hotkey_listener = keyboard.GlobalHotKeys(hotkeys_test)
         self.hotkey_thread = threading.Thread(target=self.hotkey_listener.run)
@@ -64,43 +70,69 @@ class SongAutoClicker:
         self.overlay_thread.start()
         print("Overlay started")
         self.status_overlay = self.overlay_thread.get_status_overlay()
+        print(type(self.status_overlay))
+
+    @staticmethod
+    def loop_indexes(index, length):
+        if index < 0:
+            return length - 1
+        elif index >= length:
+            return 0
+        else:
+            return index
+
+    def next_song_index(self):
+        return self.loop_indexes(self.current_song_index + 1, len(self.song_order))
+
+    def previous_song_index(self):
+        return self.loop_indexes(self.current_song_index - 1, len(self.song_order))
+
+    def next_verse_index(self):
+        return self.loop_indexes(self.current_verse_index + 1, len(self.songlist[self.current_song].get('verse_order')))
+
+    def previous_verse_index(self):
+        return self.loop_indexes(self.current_verse_index - 1, len(self.songlist[self.current_song].get('verse_order')))
+
+
 
     # Hotkey Callbacks
-    def next_song(self):
-        self.current_song_index += 1
-        if self.current_song_index > len(self.song_order):
-            self.current_song_index = 0
+    def call_next_song(self):
+        self.current_song_index = self.next_song_index()
         self.current_verse_index = 0
-        self.status_overlay.update_song(self.song_order[self.current_song_index])
 
-    def previous_song(self):
-        self.current_song_index -= 1
-        if self.current_song_index < 0:
-            self.current_song_index = len(self.song_order)
+        self.status_overlay.update_status(song=self.song_order[self.current_song_index],
+                                          verse=self.current_song_data.get('verse_order')[self.current_verse_index],
+                                          next_verse=self.current_song_data.get('verse_order')[self.next_verse_index()],
+                                          next_song=self.song_order[self.next_song_index()])
+
+    def call_previous_song(self):
+        self.current_song_index = self.previous_song_index()
         self.current_verse_index = 0
-        self.status_overlay.update_song(self.song_order[self.current_song_index])
 
-    def next_verse(self):
-        current_song = self.song_order[self.current_song_index]
-        self.current_verse_index += 1
-        if self.current_verse_index > len(self.songlist[current_song].get('verse_order')):
-            self.current_verse_index = 0
-        self.status_overlay.update_verse(self.songlist[current_song].get('verse_order')[self.current_verse_index])
+        self.status_overlay.update_status(song=self.song_order[self.current_song_index],
+                                          verse=self.current_song_data.get('verse_order')[self.current_verse_index],
+                                          next_verse=self.current_song_data.get('verse_order')[self.next_verse_index()],
+                                          next_song=self.song_order[self.next_song_index()])
 
-    def previous_verse(self):
-        current_song = self.song_order[self.current_song_index]
-        self.current_verse_index -= 1
-        if self.current_verse_index < 0:
-            self.current_verse_index = len(self.songlist[current_song].get('verse_order'))
-        self.status_overlay.update_verse(self.songlist[current_song].get('verse_order')[self.current_verse_index])
+    def call_next_verse(self):
+        self.current_verse_index = self.next_verse_index()
 
-    def pause(self):
+        self.status_overlay.update_status(verse=self.current_song_data.get('verse_order')[self.current_verse_index],
+                                          next_verse=self.current_song_data.get('verse_order')[self.next_verse_index()])
+
+    def call_previous_verse(self):
+        self.current_verse_index = self.previous_verse_index()
+
+        self.status_overlay.update_status(verse=self.current_song_data.get('verse_order')[self.current_verse_index],
+                                          next_verse=self.current_song_data.get('verse_order')[self.next_verse_index()])
+
+    def call_pause(self):
         pass
 
-    def play(self):
+    def call_play(self):
         pass
 
-    def exit(self):
+    def call_exit(self):
         pass
 
     def load_songlist(self, songlist_path=songlist_path):
@@ -167,14 +199,14 @@ class SongAutoClicker:
 if __name__ == '__main__':
     app = overlay.QApplication([])
     clicker = SongAutoClicker()
-    print("Starting setup")
-    clicker.setup_hotkeys()
-    print("Hotkeys setup")
-    clicker.setup_overlay(app)
-    app.exec_()
-    print("Overlay setup")
+
     clicker.load_compatible_songs()
     print("Compatible songs loaded")
     clicker.load_songlist()
     print("Songlist loaded")
 
+    clicker.setup_hotkeys()
+    print("Hotkeys setup")
+    clicker.setup_overlay(app)
+    app.exec_()
+    print("Overlay setup")
