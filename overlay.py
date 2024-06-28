@@ -12,13 +12,13 @@ class HelpOverlay(QWidget):
 
         layout = QVBoxLayout()
 
-        labels = [("F13: ", "Next Song"), ("F14: ", "Previous Song"), ("F15: ", "Next Verse"),
-                  ("F16: ", "Previous Verse"), ("F17: ", "Pause"), ("F18: ", "Play"), ("F19: ", "Exit")]
+        labels = [("F13", "Next Song"), ("F14", "Previous Song"), ("F15", "Next Verse"),
+                  ("F16", "Previous Verse"), ("F17", "Pause"), ("F18", "Play"), ("F19", "Exit")]
 
         font = QFont("Consolas", 14)
 
-        for label_text, text in labels:
-            label = QLabel(f"{label_text} {text}")
+        for key, info in labels:
+            label = QLabel(f"{key}: {info}")
             label.setFont(font)
             layout.addWidget(label)
 
@@ -76,16 +76,15 @@ class StatusOverlay(QWidget):
 
 
 class OverlayThread(QThread):
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
         self.status_overlay = None
         self.help_overlay = None
-        self.app = None
+        self.app = app
         print("Initializing overlay thread")
 
     def run(self):
         print("Starting overlay")
-        self.app = QApplication([])
 
         self.help_overlay = HelpOverlay()
         self.status_overlay = StatusOverlay()
@@ -94,7 +93,6 @@ class OverlayThread(QThread):
         self.status_overlay.show()
 
         print("Overlay started")
-        self.app.exec_()
 
     def get_status_overlay(self):
         return self.status_overlay

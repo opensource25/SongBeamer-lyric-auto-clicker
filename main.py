@@ -58,8 +58,8 @@ class SongAutoClicker:
         self.hotkey_thread = threading.Thread(target=self.hotkey_listener.run)
         self.hotkey_thread.start()
 
-    def setup_overlay(self):
-        self.overlay_thread = overlay.OverlayThread()
+    def setup_overlay(self, app):
+        self.overlay_thread = overlay.OverlayThread(app)
         print("Starting overlay")
         self.overlay_thread.start()
         print("Overlay started")
@@ -165,13 +165,16 @@ class SongAutoClicker:
 
 
 if __name__ == '__main__':
+    app = overlay.QApplication([])
     clicker = SongAutoClicker()
     print("Starting setup")
     clicker.setup_hotkeys()
     print("Hotkeys setup")
-    clicker.setup_overlay()
+    clicker.setup_overlay(app)
+    app.exec_()
     print("Overlay setup")
     clicker.load_compatible_songs()
     print("Compatible songs loaded")
     clicker.load_songlist()
     print("Songlist loaded")
+
