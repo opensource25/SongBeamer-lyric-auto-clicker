@@ -69,6 +69,7 @@ class StatusOverlay(QWidget):
             self.next_verse.setText(next_verse)
         if next_song is not None:
             self.next_song.setText(next_song)
+        self.repaint()
 
     def showEvent(self, event):
         # Move the widget to the top right corner
