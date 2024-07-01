@@ -1,0 +1,17 @@
+﻿#LangCount=1
+#Title=song2
+#Editor=SongBeamer 6.04c
+#Version=3
+#VerseOrder=Intro,Vers 1,Chorus 1,Outro
+---
+Intro
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+---
+Vers 1
+Nam id felis a nulla ornare rhoncus quis id libero.
+---
+Chorus 1
+Morbi ut sem sollicitudin, semper purus vitae, cursus odio.
+---
+Outro
+Nullam facilisis ligula quis arcu bibendum, quis rhoncus purus finibus.

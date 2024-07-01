@@ -1,10 +1,10 @@
 import pyaudio
 
 
-sng_dir = "./Songs"
-compatible_songs_path = "./compatible_songs.csv"
+sng_dir = "./example-files/songs"
+compatible_songs_path = "./example-files/compatible_songs.csv"
 
-songlist_path = "./songlist.txt"
+songlist_path = "./example-files/songlist.txt"
 
 # voice recognition
 vosk_model_path = "./models/vosk-model-de-0.21"
