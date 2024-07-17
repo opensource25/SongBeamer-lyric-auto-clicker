@@ -21,9 +21,15 @@ class SongAutoClicker:
 
         self.status_overlay = None
 
+        self.keyboard_controller = keyboard.Controller()
+
     @property
     def current_song_data(self):
         return self.songlist[self.song_order[self.current_song_index]]
+
+    @property
+    def current_verse_key(self):
+        return str(self.current_song_data['keymap'][self.current_verse_index])
 
     # def setup_voice_recognition(self, vosk_model_path=vosk_model_path):
     #     audio = pyaudio.PyAudio()
@@ -112,12 +118,14 @@ class SongAutoClicker:
     def call_next_verse(self):
         self.current_verse_index = self.next_verse_index()
 
+        self.keyboard_controller.tap(key=self.current_verse_key)
         self.status_overlay.update_status(verse=self.current_song_data.get('verse_order')[self.current_verse_index],
                                           next_verse=self.current_song_data.get('verse_order')[self.next_verse_index()])
 
     def call_previous_verse(self):
         self.current_verse_index = self.previous_verse_index()
 
+        self.keyboard_controller.tap(key=self.current_verse_key)
         self.status_overlay.update_status(verse=self.current_song_data.get('verse_order')[self.current_verse_index],
                                           next_verse=self.current_song_data.get('verse_order')[self.next_verse_index()])
 
@@ -179,8 +187,19 @@ class SongAutoClicker:
                     elif lastline == "verse":
                         verse.append(line)
 
-                if len(verse) > 0:
-                    self.songlist.update({songname: song_data})
+            song_keymap_by_verse_name = {}  # {verse_name: key}
+            song_keymap_by_verse_index = {}  # {verse_index: key}
+            for verse_index, verse in enumerate(song_data["verse_order"], start=1):
+                if song_keymap_by_verse_name.get(verse) is None:
+                    song_keymap_by_verse_name.update({verse_index: verse_index})
+
+                key = song_keymap_by_verse_name.get(verse)
+                song_keymap_by_verse_index.update({verse_index: key})
+
+            song_data.update({"keymap": song_keymap_by_verse_index})
+
+            if len(verse) > 0 and len(set(song_data["verse_order"])) < 10:
+                self.songlist.update({songname: song_data})
 
         return song_data
 
