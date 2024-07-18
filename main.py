@@ -2,6 +2,7 @@ from pynput import keyboard
 import csv
 import json
 import os
+import time
 import threading
 from difflib import SequenceMatcher
 from vosk import Model, KaldiRecognizer
@@ -23,6 +24,9 @@ class SongAutoClicker:
 
         self.keyboard_controller = keyboard.Controller()
 
+        self.new_result = False
+        self.result = ""
+
     @property
     def current_song_data(self):
         return self.songlist[self.song_order[self.current_song_index]]
@@ -31,19 +35,20 @@ class SongAutoClicker:
     def current_verse_key(self):
         return str(self.current_song_data['keymap'][self.current_verse_index])
 
-    # def setup_voice_recognition(self, vosk_model_path=vosk_model_path):
-    #     audio = pyaudio.PyAudio()
-    #     self.stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
-    #
-    #     model = Model(vosk_model_path)
-    #     self.recognizer = KaldiRecognizer(model, "rate")
-    #
-    # def voice_recognize(self):
-    #     while True:
-    #         data = self.stream.read(CHUNK)
-    #         if self.recognizer.AcceptWaveform(data):
-    #             result = json.loads(self.recognizer.Result())
-    #
+    def setup_voice_recognition(self):
+        # setup speechrecognition
+        audio = pyaudio.PyAudio()
+        self.stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+
+        model = Model(vosk_model_path)
+        self.recognizer = KaldiRecognizer(model, RATE)
+
+    def voice_recognize(self):
+        while True:
+            data = self.stream.read(CHUNK)
+            if self.recognizer.AcceptWaveform(data):
+                self.result = json.loads(self.recognizer.Result())['text']
+                self.new_result = True
 
     def setup_hotkeys(self):
         hotkeys = {
@@ -214,6 +219,14 @@ class SongAutoClicker:
                 else:
                     print(f"Warning: Skipping row with fewer than 2 columns: {row}")
 
+    def mainloop(self):
+        while True:
+            if self.new_result:
+                self.new_result = False
+                print(self.result)
+            else:
+                time.sleep(0.25)
+
 
 if __name__ == '__main__':
     app = overlay.QApplication([])
@@ -223,6 +236,12 @@ if __name__ == '__main__':
     print("Compatible songs loaded")
     clicker.load_songlist()
     print("Songlist loaded")
+
+    clicker.setup_voice_recognition()
+    print("Voice recognition setup")
+
+    threading.Thread(target=clicker.voice_recognize).start()
+    threading.Thread(target=clicker.mainloop).start()
 
     clicker.setup_hotkeys()
     print("Hotkeys setup")
