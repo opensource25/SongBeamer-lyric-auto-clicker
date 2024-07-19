@@ -1,4 +1,4 @@
-This is a script to automatically present right lyric slide for songs in SongBeamer.  
+This is a script to automatically present right lyric slide for songs in [https://www.songbeamer.de/](SongBeamer).  
 For now (tag v0.1), it only is an unnecessary complicated and probably worse way to change slides in SongBeamer.  
 This Project was ment do be a try to make, with the expectation that it will be a failure, 
 to make the lyric slides change automatically (so easier for me) in SongBeamer.
